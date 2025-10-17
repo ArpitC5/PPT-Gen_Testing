@@ -52,8 +52,8 @@
   </g>
 
   <!-- Arrows from left to center and center to right -->
-  <path class="arrow" d="M260 135 L320 135" />
-  <path class="arrow" d="M640 135 L680 135" />
+  <path class="arrow" d="M260 135 L320 140" />
+  <path class="arrow" d="M640 140 L680 140" />
 
   <!-- Bottom: slides folder structure -->
   <g transform="translate(40,260)">
@@ -89,10 +89,13 @@
       <text x="12" y="84" class="note">*.png, *.jpg (images)</text>
     </g>
 
-    <!-- arrows from slides folder to per-slide modules -->
-    <path class="arrow" d="M200 340 L380 200" />
-    <path class="arrow" d="M520 340 L740 200" />
-    <path class="arrow" d="M880 340 L980 200" />
+  <!-- arrows from slides folder to per-slide modules -->
+  <!-- slide1 -> slide1.py -->
+  <path class="arrow" d="M210 400 L400 400 L400 150 L753 150" />
+  <!-- slide2 -> slide2.py -->
+  <path class="arrow" d="M530 400 L700 400 L700 150 L895 150" />
+  <!-- slideN -> src box center -->
+  <path class="arrow" d="M900 400 L900 250 L910 180" />
 
   </g>
 
