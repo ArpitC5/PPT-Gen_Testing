@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+  <style>
+    .box { fill:#f7f9fc; stroke:#2b6cb0; stroke-width:2; rx:8; }
+    .small { font: 14px Arial, sans-serif; fill:#17202a; }
+    .title { font: 20px Arial, sans-serif; fill:#0b3b6f; font-weight:700; }
+    .arrow { stroke:#333; stroke-width:2; fill:none; marker-end:url(#arrowhead); }
+    .note { font: 12px Arial, sans-serif; fill:#334155; }
+    .pill { fill:#fff; stroke:#94a3b8; stroke-width:1; rx:12; }
+  </style>
+
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="40" y="40" class="title">PPT-Gen Project Flow</text>
+  <text x="40" y="65" class="note">High-level execution and folder structure (run: python -m src.generate_ppt slides output.pptx)</text>
+
+  <!-- Left: User/CLI -->
+  <g transform="translate(40,100)">
+    <rect class="box" width="220" height="70" />
+    <text x="15" y="32" class="small">User / Scheduler</text>
+    <text x="15" y="52" class="small">Runs: python -m src.generate_ppt</text>
+  </g>
+
+  <!-- Center: Driver -->
+  <g transform="translate(320,80)">
+    <rect class="box" width="320" height="120" />
+    <text x="16" y="32" class="small">src/generate_ppt.py</text>
+    <text x="16" y="56" class="note">- Scans slides folder</text>
+    <text x="16" y="76" class="note">- Delegates to per-slide modules (slide1, slide2...)</text>
+    <text x="16" y="96" class="note">- Builds Presentation(), saves output.pptx</text>
+  </g>
+
+  <!-- Right: Per-slide modules -->
+  <g transform="translate(680,80)">
+    <rect class="box" width="460" height="200" />
+    <text x="16" y="28" class="small">src/</text>
+    <g transform="translate(8,36)">
+      <rect class="pill" x="0" y="0" width="130" height="30" />
+      <text x="10" y="20" class="small">slide1.py</text>
+    </g>
+    <g transform="translate(150,36)">
+      <rect class="pill" x="0" y="0" width="130" height="30" />
+      <text x="10" y="20" class="small">slide2.py</text>
+    </g>
+    <text x="16" y="82" class="note">Each slide module exposes: process(prs, folder: Path)</text>
+    <text x="16" y="102" class="note">Responsible for reading csv/xlsx/images and adding slide content</text>
+  </g>
+
+  <!-- Arrows from left to center and center to right -->
+  <path class="arrow" d="M260 135 L320 135" />
+  <path class="arrow" d="M640 135 L680 135" />
+
+  <!-- Bottom: slides folder structure -->
+  <g transform="translate(40,260)">
+    <rect class="box" width="1100" height="260" />
+    <text x="16" y="28" class="small">slides/</text>
+
+    <!-- Slide 1 folder -->
+    <g transform="translate(20,40)">
+      <rect width="300" height="200" fill="#ffffff" stroke="#94a3b8" rx="6" />
+      <text x="12" y="24" class="small">slide1/</text>
+      <text x="12" y="44" class="note">meta.txt (title)</text>
+      <text x="12" y="64" class="note">sales.csv</text>
+      <text x="12" y="84" class="note">Slide1.jpg (background)</text>
+      <text x="12" y="104" class="note">Lenovo-Logo.png</text>
+    </g>
+
+    <!-- Slide 2 folder -->
+    <g transform="translate(340,40)">
+      <rect width="300" height="200" fill="#ffffff" stroke="#94a3b8" rx="6" />
+      <text x="12" y="24" class="small">slide2/</text>
+      <text x="12" y="44" class="note">meta.txt (title)</text>
+      <text x="12" y="64" class="note">Target-V-Actual.xlsx (table)</text>
+      <text x="12" y="84" class="note">data.csv (optional)</text>
+      <text x="12" y="104" class="note">images/ (optional charts/images)</text>
+    </g>
+
+    <!-- Generic slide folder -->
+    <g transform="translate(660,40)">
+      <rect width="400" height="200" fill="#ffffff" stroke="#94a3b8" rx="6" />
+      <text x="12" y="24" class="small">slideN/</text>
+      <text x="12" y="44" class="note">meta.txt</text>
+      <text x="12" y="64" class="note">*.csv, *.xlsx</text>
+      <text x="12" y="84" class="note">*.png, *.jpg (images)</text>
+    </g>
+
+    <!-- arrows from slides folder to per-slide modules -->
+    <path class="arrow" d="M200 340 L380 200" />
+    <path class="arrow" d="M520 340 L740 200" />
+    <path class="arrow" d="M880 340 L980 200" />
+
+  </g>
+
+  <!-- Bottom-right: Output -->
+  <g transform="translate(780,540)">
+    <rect class="box" width="320" height="120" />
+    <text x="16" y="36" class="small">Output</text>
+    <text x="16" y="60" class="note">output.pptx</text>
+    <text x="16" y="80" class="note">Contains slides produced by slide modules</text>
+  </g>
+
+  <path class="arrow" d="M780 500 L880 500 L880 540" />
+  <text x="40" y="540" class="note">Data & media flow: slide folders -> slide modules -> Presentation()</text>
+
+  <!-- Footer -->
+  <text x="40" y="860" class="note">Generated diagram: docs/project_flow.svg</text>
+</svg>
