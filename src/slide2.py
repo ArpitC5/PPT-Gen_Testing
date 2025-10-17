@@ -9,7 +9,7 @@ import re
 import pandas as pd
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
-
+from .base_slide import read_meta_title, add_table_slide
 
 ZERO_WIDTH = '\u200b'
 
@@ -47,53 +47,8 @@ def _parse_percent(s):
 
 
 def _add_table_slide(prs, df: pd.DataFrame, title: str = 'Target vs Actual', insights=None):
-    blank = prs.slide_layouts[5]
-    slide = prs.slides.add_slide(blank)
-    left = Inches(0.5)
-    top = Inches(0.6)
-    width = Inches(9)
-
-    # Title
-    tx = slide.shapes.add_textbox(left, Inches(0.2), width, Inches(0.4)).text_frame
-    p = tx.paragraphs[0]
-    p.text = title
-    p.font.size = Pt(22)
-
-    rows, cols = df.shape[0] + 1, df.shape[1]
-    table = slide.shapes.add_table(rows, cols, left, top + Inches(0.2), width, Inches(3.6)).table
-    # header
-    for j, col in enumerate(df.columns):
-        cell = table.cell(0, j)
-        cell.text = str(col)
-    # rows
-    for i, row in enumerate(df.itertuples(index=False), start=1):
-        for j, val in enumerate(row):
-            table.cell(i, j).text = str(val)
-
-    # If insights provided, render them on the same slide (right side)
-    if insights:
-        insp_left = Inches(6.0)
-        insp_top = Inches(0.6)
-        insp_w = Inches(3.0)
-        insp_h = Inches(4.0)
-        tf = slide.shapes.add_textbox(insp_left, insp_top, insp_w, insp_h).text_frame
-        tf.word_wrap = True
-        if not tf.paragraphs:
-            tf.add_paragraph()
-        for line in insights:
-            p = tf.add_paragraph()
-            for piece in line:
-                text, color = piece
-                run = p.add_run()
-                run.text = text
-                font = run.font
-                font.size = Pt(12)
-                if color == 'green':
-                    font.color.rgb = RGBColor(0x00, 0x80, 0x00)
-                elif color == 'red':
-                    font.color.rgb = RGBColor(0xC0, 0x00, 0x00)
-                else:
-                    font.color.rgb = RGBColor(0x00, 0x00, 0x00)
+    # Reuse shared helper which supports insights
+    return add_table_slide(prs, df, title=title, insights=insights)
 
 
 def _format_currency(val):
@@ -104,6 +59,7 @@ def _format_currency(val):
 
 
 def _add_insights_slide(prs, insights):
+    # Keep for compatibility if standalone insights-only slide is needed
     blank = prs.slide_layouts[5]
     slide = prs.slides.add_slide(blank)
     left = Inches(0.5)
@@ -112,7 +68,6 @@ def _add_insights_slide(prs, insights):
     height = Inches(4)
     tf = slide.shapes.add_textbox(left, top, width, height).text_frame
     tf.word_wrap = True
-    # Ensure initial paragraph exists
     if not tf.paragraphs:
         tf.add_paragraph()
     for line in insights:
@@ -132,13 +87,7 @@ def _add_insights_slide(prs, insights):
 
 
 def process(prs, folder: Path):
-    title = folder.name
-    meta = folder / 'meta.txt'
-    if meta.exists():
-        try:
-            title = meta.read_text(encoding='utf-8').strip().splitlines()[0]
-        except Exception:
-            pass
+    title = read_meta_title(folder) or folder.name
 
     excel = folder / 'Target-V-Actual.xlsx'
     if not excel.exists():

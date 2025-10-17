@@ -13,6 +13,8 @@ from pptx.util import Inches, Pt
 from pptx.enum.text import PP_ALIGN
 from PIL import Image
 
+from .base_slide import read_meta_title, px_to_inches, add_images_from_folder, add_table_slide
+
 # --- Adjustable offsets (in inches) that you can tweak ---
 TEXTBOX1_LEFT_IN = 1.0
 TEXTBOX1_TOP_IN = 1.0
@@ -83,9 +85,8 @@ def _add_bg_and_boxes(prs, folder: Path):
         try:
             im = Image.open(logo)
             w_px, h_px = im.size
-            px_to_in = lambda px: px / 96
-            w_in = px_to_in(w_px)
-            h_in = px_to_in(h_px)
+            w_in = px_to_inches(w_px)
+            h_in = px_to_inches(h_px)
             scale = min(LOGO_MAX_WIDTH_IN / w_in, 1.0)
             logo_w = Inches(w_in * scale)
             logo_h = Inches(h_in * scale)
@@ -98,51 +99,18 @@ def _add_bg_and_boxes(prs, folder: Path):
 
 
 def _add_sales_table(prs, df: pd.DataFrame, title: str = 'Sales'):
-    # Reuse prior simple table implementation on a new slide
-    blank = prs.slide_layouts[5]
-    slide = prs.slides.add_slide(blank)
-    left = Inches(0.5)
-    top = Inches(0.6)
-    width = Inches(9)
-
-    tx = slide.shapes.add_textbox(left, Inches(0.2), width, Inches(0.4)).text_frame
-    p = tx.paragraphs[0]
-    p.text = title
-    p.font.size = Pt(22)
-    p.font.bold = True
-    p.alignment = PP_ALIGN.LEFT
-
-    rows, cols = df.shape[0] + 1, df.shape[1]
-    table = slide.shapes.add_table(rows, cols, left, top + Inches(0.2), width, Inches(3.6)).table
-    for j, col in enumerate(df.columns):
-        table.cell(0, j).text = str(col)
-    for i, row in enumerate(df.itertuples(index=False), start=1):
-        for j, val in enumerate(row):
-            table.cell(i, j).text = str(val)
+    # Use shared table helper
+    add_table_slide(prs, df, title)
 
 
 def _add_images(prs, folder: Path):
     imgs = list(folder.glob('*.png')) + list(folder.glob('*.jpg')) + list(folder.glob('*.jpeg'))
-    # exclude background and logo used already
     imgs = [p for p in imgs if p.name.lower() not in ('slide1.jpg', 'lenovo-logo.png')]
     if not imgs:
         return
     blank = prs.slide_layouts[5]
     slide = prs.slides.add_slide(blank)
-    y = Inches(1)
-    for img in imgs:
-        try:
-            im = Image.open(img)
-            w, h = im.size
-            px_to_in = lambda px: px / 96
-            w_in = px_to_in(w)
-            h_in = px_to_in(h)
-            max_w = Inches(6)
-            scale = min(max_w.inches / w_in, 1.0)
-            slide.shapes.add_picture(str(img), Inches(1), y, width=Inches(w_in * scale))
-            y = y + Inches(h_in * scale) + Inches(0.3)
-        except Exception:
-            continue
+    add_images_from_folder(slide, folder, exclude_names=['Slide1.jpg', 'Lenovo-Logo.png'])
 
 
 def process(prs, folder: Path):
@@ -153,13 +121,7 @@ def process(prs, folder: Path):
     - sales.csv - table to show
     - images (png/jpg) optional
     """
-    title = folder.name
-    meta = folder / 'meta.txt'
-    if meta.exists():
-        try:
-            title = meta.read_text(encoding='utf-8').strip().splitlines()[0]
-        except Exception:
-            pass
+    title = read_meta_title(folder) or folder.name
 
     # Main designed slide: background, boxes, date, logo
     _add_bg_and_boxes(prs, folder)
